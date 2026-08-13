@@ -617,7 +617,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const DISCORD_USER_ID = '1023541677975150692';
+  const DISCORD_USER_ID = 'discord id';
   const onlineStatusDot = document.querySelector('.online-status');
   const onlineTextEl = document.querySelector('.online-text');
   const spotifyWidget = document.getElementById('spotify-widget');
