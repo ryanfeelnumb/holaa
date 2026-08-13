@@ -107,19 +107,22 @@ document.addEventListener('DOMContentLoaded', () => {
     startCursorVisible = !startCursorVisible;
     startText.textContent = startTextContent + (startCursorVisible ? '|' : ' ');
   }, 500);
+  let startTriggered = false;
 
+  function startExperience() {
+    if (startTriggered) return;
+    startTriggered = true;
 
-  // Total views sekarang statis, diisi langsung di index.html (span#visitor-count) — tidak ada fetch/edit otomatis lagi.
-
-
-  startScreen.addEventListener('click', () => {
     startScreen.classList.add('hidden');
-    setupAudioGraph();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
     backgroundMusic.muted = false;
     backgroundMusic.play().catch(err => {
-      console.error("Failed to play music after start screen click:", err);
+      console.error("Failed to play music on start:", err);
     });
+    setupAudioGraph();
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(err => console.error("Failed to resume audio context:", err));
+    }
+
     profileBlock.classList.remove('hidden');
     gsap.fromTo(profileBlock,
       { opacity: 0, y: -50 },
@@ -142,39 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     typeWriterName();
     typeWriterBio();
-  });
+  }
 
+  startScreen.addEventListener('click', startExperience);
   startScreen.addEventListener('touchstart', (e) => {
     e.preventDefault();
-    startScreen.classList.add('hidden');
-    setupAudioGraph();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    backgroundMusic.muted = false;
-    backgroundMusic.play().catch(err => {
-      console.error("Failed to play music after start screen touch:", err);
-    });
-    profileBlock.classList.remove('hidden');
-    gsap.fromTo(profileBlock,
-      { opacity: 0, y: -50 },
-      { opacity: 1, y: 0, duration: 1, ease: 'power2.out', onComplete: () => {
-        profileBlock.classList.add('profile-appear');
-        profileContainer.classList.add('orbit');
-      }}
-    );
-    if (!isTouchDevice) {
-      try {
-        new cursorTrailEffect({
-          length: 10,
-          size: 8,
-          speed: 0.2
-        });
-        console.log("Cursor trail initialized");
-      } catch (err) {
-        console.error("Failed to initialize cursor trail effect:", err);
-      }
-    }
-    typeWriterName();
-    typeWriterBio();
+    startExperience();
   });
 
 
@@ -417,10 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-
-
   
-
   function handleTilt(e, element) {
     const rect = element.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -643,4 +616,134 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  const DISCORD_USER_ID = '1023541677975150692';
+  const onlineStatusDot = document.querySelector('.online-status');
+  const onlineTextEl = document.querySelector('.online-text');
+  const spotifyWidget = document.getElementById('spotify-widget');
+  const spotifyArt = document.getElementById('spotify-album-art');
+  const spotifySong = document.getElementById('spotify-song');
+  const spotifyArtist = document.getElementById('spotify-artist');
+  const spotifyProgress = document.getElementById('spotify-progress');
+
+  const STATUS_META = {
+    online:  { color: '#43b581', label: 'Online' },
+    idle:    { color: '#faa61a', label: 'Idle' },
+    dnd:     { color: '#f04747', label: 'Do Not Disturb' },
+    offline: { color: '#747f8d', label: 'Offline' },
+  };
+
+  let spotifyProgressTimer = null;
+
+  function applyDiscordStatus(status) {
+    const meta = STATUS_META[status] || STATUS_META.offline;
+    if (onlineStatusDot) {
+      onlineStatusDot.style.background = meta.color;
+      onlineStatusDot.style.boxShadow = `0 0 8px ${meta.color}, 0 0 4px rgba(0,0,0,0.6)`;
+      onlineStatusDot.title = meta.label;
+    }
+    if (onlineTextEl) {
+      onlineTextEl.textContent = meta.label;
+      onlineTextEl.style.color = meta.color;
+      onlineTextEl.style.setProperty('--dot-color', meta.color);
+      const beforeStyleId = 'dynamic-online-dot-color';
+      let styleTag = document.getElementById(beforeStyleId);
+      if (!styleTag) {
+        styleTag = document.createElement('style');
+        styleTag.id = beforeStyleId;
+        document.head.appendChild(styleTag);
+      }
+      styleTag.textContent = `.online-text::before { background: ${meta.color} !important; box-shadow: 0 0 6px ${meta.color} !important; }`;
+    }
+  }
+
+  function updateSpotifyWidget(data) {
+    const spotify = data.spotify;
+    if (!spotify) {
+      if (spotifyWidget) spotifyWidget.classList.add('hidden');
+      if (spotifyProgressTimer) {
+        clearInterval(spotifyProgressTimer);
+        spotifyProgressTimer = null;
+      }
+      return;
+    }
+
+    if (spotifyWidget) spotifyWidget.classList.remove('hidden');
+    if (spotifyArt) spotifyArt.src = spotify.album_art_url || '';
+    if (spotifySong) spotifySong.textContent = spotify.song || '';
+    if (spotifyArtist) spotifyArtist.textContent = spotify.artist || '';
+
+    const start = spotify.timestamps?.start || Date.now();
+    const end = spotify.timestamps?.end || Date.now();
+    const total = Math.max(end - start, 1);
+
+    if (spotifyProgressTimer) clearInterval(spotifyProgressTimer);
+    const tick = () => {
+      const elapsed = Date.now() - start;
+      const pct = Math.min(Math.max((elapsed / total) * 100, 0), 100);
+      if (spotifyProgress) spotifyProgress.style.width = pct + '%';
+      if (elapsed >= total && spotifyProgressTimer) {
+        clearInterval(spotifyProgressTimer);
+        spotifyProgressTimer = null;
+      }
+    };
+    tick();
+    spotifyProgressTimer = setInterval(tick, 1000);
+  }
+
+  function handleLanyardData(data) {
+    applyDiscordStatus(data.discord_status || 'offline');
+    updateSpotifyWidget(data);
+  }
+
+  function connectLanyard() {
+    let socket;
+    let heartbeatInterval;
+
+    try {
+      socket = new WebSocket('wss://api.lanyard.rest/socket');
+    } catch (err) {
+      console.error('Lanyard WebSocket unavailable:', err);
+      return;
+    }
+
+    socket.addEventListener('message', (event) => {
+      let payload;
+      try {
+        payload = JSON.parse(event.data);
+      } catch (err) {
+        return;
+      }
+
+      const { op, t, d } = payload;
+
+      if (op === 1) {
+        const interval = d.heartbeat_interval;
+        heartbeatInterval = setInterval(() => {
+          if (socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({ op: 3 }));
+          }
+        }, interval);
+
+        socket.send(JSON.stringify({
+          op: 2,
+          d: { subscribe_to_id: DISCORD_USER_ID }
+        }));
+      } else if (t === 'INIT_STATE' || t === 'PRESENCE_UPDATE') {
+        if (d) handleLanyardData(d);
+      }
+    });
+
+    socket.addEventListener('close', () => {
+      if (heartbeatInterval) clearInterval(heartbeatInterval);
+      setTimeout(connectLanyard, 5000);
+    });
+
+    socket.addEventListener('error', (err) => {
+      console.error('Lanyard WebSocket error:', err);
+      socket.close();
+    });
+  }
+
+  connectLanyard();
 });
