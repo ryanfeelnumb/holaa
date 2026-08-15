@@ -1,15 +1,15 @@
 const CONFIG = {
-  name: 'myosotis',
+  name: 'name',
   bioMessages: [
-    "supp twins.",
-    "don't know where i'm going, but i know i ain't going back, lost a few people, lost myself a couple times, still found reasona to keep moving!"
+    "bio.",
+    "long text"
   ],
   bioMessagesLateNight: [
-    "why are you still staying up late?",
-    "ain't know where i'm headed,just know i can't go back, lost people i loved, lost myself in the process but shit, i'm still moving so i must be doing something right!"
+    "bio night",
+    "long text"
   ],
-  discordUserId: '1023541677975150692',
-  namespace: 'myosotis-profile-ryanfeelnumb',
+  discordUserId: 'id discord',
+  namespace: 'name',
   skills: {
     python: 87,
     cpp: 75,
