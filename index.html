@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+    <title>myosotis</title>
+    <meta name="theme-color" content="#000000">
+    <meta property="og:title" content="myosotis">
+    <meta property="og:description" content="don't know where i'm going, but i know i ain't going back.">
+    <meta property="og:image" content="assets/profile.gif">
+    <meta property="og:type" content="profile">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="myosotis">
+    <meta name="twitter:description" content="don't know where i'm going, but i know i ain't going back.">
+    <meta name="twitter:image" content="assets/profile.gif">
+    <link rel="icon" type="image/gif" href="assets/profile.gif">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overscroll-behavior: none;
+        }
+
+        .equalizer,
+        .profile-picture,
+        .social-icon,
+        #results-theme {
+            touch-action: manipulation;
+        }
+
+        
+        .custom-cursor {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            background: url('assets/custom_cursor.png') no-repeat center center;
+            background-size: contain;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+
+        
+        body:not(.touch-device) {
+            cursor: none;
+        }
+        
+        body:not(.touch-device) *,
+        body:not(.touch-device) *::before,
+        body:not(.touch-device) *::after {
+            cursor: none !important;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            position: relative;
+        }
+
+        #background {
+            position: fixed;
+            top: -3%;
+            left: -3%;
+            width: 106%;
+            height: 106%;
+            object-fit: cover;
+            z-index: 1;
+            pointer-events: none;
+            will-change: transform;
+        }
+
+        .glitch-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        #overlay, #snow-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        #vignette-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 4;
+            background: radial-gradient(
+                ellipse at center,
+                rgba(0, 0, 0, 0) 45%,
+                rgba(0, 0, 0, 0.55) 100%
+            );
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        
+        .equalizer {
+            position: fixed;
+            bottom: calc(50% - 240px - 15px);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            width: 160px;
+            height: 40px;
+            z-index: 20;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 14px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            cursor: pointer;
+            transition: border-color 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .equalizer:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .equalizer-hint {
+            position: fixed;
+            bottom: calc(50% - 240px - 15px + 40px + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.75);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 3px 10px;
+            border-radius: 10px;
+            pointer-events: none;
+            white-space: nowrap;
+            animation: hintBounce 1.6s ease-in-out infinite;
+        }
+
+        @keyframes hintBounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.75; }
+            50% { transform: translateX(-50%) translateY(-4px); opacity: 1; }
+        }
+
+        .eq-bar {
+            width: 3px;
+            height: 8%;
+            border-radius: 2px;
+            background: var(--primary-color, #FFFFFF);
+            transition: height 0.08s ease, opacity 0.3s, background 0.15s ease;
+        }
+
+        .equalizer.paused .eq-bar {
+            opacity: 0.35;
+        }
+
+        
+        #profile-block::-webkit-scrollbar,
+        #skills-block::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #profile-block::-webkit-scrollbar-track,
+        #skills-block::-webkit-scrollbar-track {
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0.04) 0px,
+                rgba(255, 255, 255, 0.04) 1px,
+                transparent 1px,
+                transparent 4px
+            );
+            border-left: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        #profile-block::-webkit-scrollbar-thumb,
+        #skills-block::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 0;
+            border: 1px solid rgba(0, 0, 0, 0.6);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+        }
+
+        #profile-block::-webkit-scrollbar-thumb:hover,
+        #skills-block::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.75);
+        }
+
+        #profile-block::-webkit-scrollbar-corner,
+        #skills-block::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+
+        #profile-block,
+        #skills-block {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.4) rgba(255, 255, 255, 0.04);
+        }
+
+        #profile-block {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 820px;
+            min-height: 332px;
+            max-height: 90vh;
+            max-height: 90dvh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            padding: 20px;
+            border-radius: 15px;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease-out, box-shadow 0.3s ease;
+            pointer-events: auto;
+            box-shadow:
+                0 0 8px rgba(255, 255, 255, 0.55),
+                0 0 20px rgba(255, 255, 255, 0.35),
+                0 0 40px rgba(255, 255, 255, 0.2),
+                0 0 70px rgba(255, 255, 255, 0.12);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .profile-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+        }
+
+        .profile-container::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            background: radial-gradient(
+                circle at 10px 10px,
+                var(--primary-color, #FFFFFF) 10%,
+                transparent 15%
+            );
+            animation: orbit 3s linear infinite;
+            z-index: -1;
+            filter: blur(1px);
+            box-shadow: none;
+        }
+
+        .profile-container.fast-orbit::after {
+            animation: fast-orbit 0.5s linear forwards;
+        }
+
+        .profile-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            pointer-events: auto;
+            opacity: 1 !important;
+            box-shadow:
+                0 0 6px rgba(255, 255, 255, 0.6),
+                0 0 16px rgba(255, 255, 255, 0.4),
+                0 0 30px rgba(255, 255, 255, 0.25);
+        }
+
+        
+        .online-status {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            width: 22px;
+            height: 22px;
+            background: #43b581;
+            border: 3px solid #000;
+            border-radius: 50%;
+            z-index: 5;
+            box-shadow: 0 0 8px rgba(67, 181, 129, 0.9), 0 0 4px rgba(0, 0, 0, 0.6);
+            animation: statusBlink 1.4s ease-in-out infinite;
+        }
+
+        @keyframes statusBlink {
+            0%, 100% {
+                opacity: 1;
+                box-shadow: 0 0 8px rgba(67, 181, 129, 0.9), 0 0 4px rgba(0, 0, 0, 0.6);
+            }
+            50% {
+                opacity: 0.35;
+                box-shadow: 0 0 2px rgba(67, 181, 129, 0.4), 0 0 2px rgba(0, 0, 0, 0.6);
+            }
+        }
+
+        .profile-pic-wrap {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .online-text {
+            position: absolute;
+            bottom: -17px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: #43b581;
+            text-transform: uppercase;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 2px 8px;
+            border-radius: 10px;
+            z-index: 6;
+            white-space: nowrap;
+        }
+
+        .online-text::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #43b581;
+            box-shadow: 0 0 6px rgba(67, 181, 129, 0.9);
+            animation: statusBlink 1.4s ease-in-out infinite;
+        }
+
+        .profile-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .name-and-badges {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        
+        #profile-name {
+            font-family: 'Retro Gaming', 'Courier New', monospace;
+            font-size: 28px;
+            font-weight: normal;
+            letter-spacing: 3px;
+            color: #fff;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
+            opacity: 1 !important;
+        }
+
+        .badge-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .badge-container {
+            position: relative;
+            pointer-events: auto;
+            opacity: 1 !important;
+        }
+
+        .badge-container .tooltip {
+            visibility: hidden;
+            width: 120px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 100;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .badge-container:hover .tooltip {
+            visibility: visible;
+            opacity: 1 !important;
+        }
+
+        .badge-box {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2px;
+            border-radius: 15px;
+            display: inline-block;
+        }
+
+        .badge-box-inner {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px;
+            border-radius: 12px;
+            display: flex;
+            gap: 8px;
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        .badge {
+            width: 22px;
+            height: 22px;
+            transition: transform 0.3s;
+            pointer-events: auto;
+            opacity: 1 !important;
+            filter: grayscale(1) brightness(1.4);
+        }
+
+        .badge:hover {
+            transform: scale(1.2);
+            filter: grayscale(1) brightness(1.4) drop-shadow(0 0 6px rgba(255, 255, 255, 0.8));
+        }
+
+        #profile-bio {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 18px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            opacity: 1 !important;
+        }
+
+        .visitor-greeting {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 10px;
+            min-height: 14px;
+        }
+
+        
+        .spotify-widget {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(29, 185, 84, 0.08);
+            border: 1px solid rgba(29, 185, 84, 0.35);
+            border-radius: 10px;
+            padding: 8px 10px;
+            margin-top: 6px;
+            margin-bottom: 10px;
+            max-width: 360px;
+        }
+
+        .spotify-album-art {
+            width: 44px;
+            height: 44px;
+            border-radius: 6px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .spotify-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .spotify-header {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10px;
+            color: #1DB954;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .spotify-icon {
+            width: 12px;
+            height: 12px;
+            flex-shrink: 0;
+        }
+
+        .spotify-song {
+            font-size: 13px;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .spotify-artist {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+
+        .spotify-progress-bar {
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .spotify-progress {
+            height: 100%;
+            width: 0%;
+            background: #1DB954;
+            border-radius: 2px;
+        }
+
+        .discord-activities {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-width: 360px;
+        }
+
+        .activity-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(88, 101, 242, 0.08);
+            border: 1px solid rgba(88, 101, 242, 0.35);
+            border-radius: 10px;
+            padding: 8px 10px;
+        }
+
+        .activity-art-wrap {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+        }
+
+        .activity-art {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .activity-art-small {
+            position: absolute;
+            bottom: -3px;
+            right: -3px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid #1a1a2e;
+            object-fit: cover;
+            background: #1a1a2e;
+        }
+
+        .activity-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .activity-type-label {
+            font-size: 10px;
+            color: #8a90f5;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .activity-name {
+            font-size: 13px;
+            color: #fff;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .activity-detail {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.65);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .activity-elapsed {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.45);
+            margin-top: 2px;
+        }
+
+        
+        .last-seen {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.65);
+            margin-top: 4px;
+        }
+
+        .last-seen-icon {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+
+        
+        .live-clock {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.65);
+            margin-top: 4px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .live-clock-icon {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+
+        
+        @keyframes skeleton-shimmer {
+            0% { background-position: -200px 0; }
+            100% { background-position: 200px 0; }
+        }
+
+        .skeleton-text {
+            display: inline-block;
+            min-width: 60px;
+            height: 12px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.15) 37%, rgba(255,255,255,0.06) 63%);
+            background-size: 400px 100%;
+            animation: skeleton-shimmer 1.4s ease-in-out infinite;
+            vertical-align: middle;
+        }
+
+        .skeleton-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 10px;
+            padding: 8px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .skeleton-art {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            flex-shrink: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.15) 37%, rgba(255,255,255,0.06) 63%);
+            background-size: 400px 100%;
+            animation: skeleton-shimmer 1.4s ease-in-out infinite;
+        }
+
+        .skeleton-lines {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .skeleton-lines .skeleton-text {
+            width: 70%;
+        }
+
+        .skeleton-lines .skeleton-text:nth-child(2) {
+            width: 45%;
+        }
+
+        
+        .fade-transition {
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+
+        .fade-out {
+            opacity: 0;
+            transform: translateY(4px);
+        }
+
+        .fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .spotify-widget,
+        .activity-card {
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+
+        .spotify-widget.fade-out,
+        .activity-card.fade-out {
+            opacity: 0;
+            transform: translateY(4px);
+        }
+
+        .bio-separator {
+            width: 100%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 20px 0;
+            opacity: 1 !important;
+        }
+
+        .profile-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 100%;
+            margin-top: auto;
+        }
+
+        .visitor-counter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            align-self: flex-start;
+            position: relative;
+            pointer-events: auto;
+            opacity: 1 !important;
+        }
+
+        .visitor-icon {
+            width: 18px;
+            height: 18px;
+            color: white;
+            opacity: 1 !important;
+        }
+
+        .visitor-counter .tooltip {
+            visibility: hidden;
+            width: 120px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 100;
+            top: -35px;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .visitor-counter:hover .tooltip {
+            visibility: visible;
+            opacity: 1 !important;
+        }
+
+        #visitor-count {
+            opacity: 1 !important;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 0;
+            pointer-events: auto;
+            opacity: 1 !important;
+        }
+
+        .social-icon {
+            width: 36px;
+            height: 36px;
+            transition: transform 0.3s ease;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
+            pointer-events: auto;
+            opacity: 1 !important;
+            animation: socialIconPulse 3.6s ease-in-out infinite;
+        }
+
+        .social-links a:nth-child(1) .social-icon { animation-delay: 0s; }
+        .social-links a:nth-child(2) .social-icon { animation-delay: 1.2s; }
+        .social-links a:nth-child(3) .social-icon { animation-delay: 2.4s; }
+
+        @keyframes socialIconPulse {
+            0%, 100% {
+                filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
+            }
+            50% {
+                filter: drop-shadow(0 0 16px rgba(255, 255, 255, 1));
+            }
+        }
+
+        .social-icon:hover {
+            transform: scale(1.4) rotateY(15deg);
+            animation-play-state: paused;
+        }
+
+        
+        #skills-block {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 820px;
+            min-height: 332px;
+            max-height: 90vh;
+            max-height: 90dvh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            backdrop-filter: blur(10px);
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease-out;
+        }
+
+        .skills-title {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .skill {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .skill-name {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .skill-icon {
+            width: 22px;
+            height: 22px;
+            margin-right: 8px;
+        }
+
+        .skill-bar-container {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .skill-bar {
+            height: 100%;
+            border-radius: 5px;
+            width: 0%;
+            transition: width 2s;
+        }
+
+        #python-bar {
+            background: linear-gradient(90deg, #ff6b6b, #ff9f9f);
+        }
+
+        #cpp-bar {
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+        }
+
+        #csharp-bar {
+            background: linear-gradient(90deg, #43e97b, #38f9d7);
+        }
+
+        
+        #results-button-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+        }
+
+        #results-theme {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+        }
+
+        #results-theme:hover {
+            background: rgba(0, 0, 0, 0.9);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        #results-hint {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            width: 180px;
+            text-align: center;
+            pointer-events: none;
+            z-index: 25;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #results-hint::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 10px 10px 10px;
+            border-style: solid;
+            border-color: transparent transparent rgba(0, 0, 0, 0.8) transparent;
+        }
+
+        
+        .home-theme #profile-block,
+        .home-theme #skills-block {
+            border-color: rgba(0, 195, 255, 0.5);
+        }
+
+        .theme #profile-block,
+        .theme #skills-block {
+            border-color: rgba(0, 255, 0, 0.5);
+        }
+
+        .rain-theme #profile-block,
+        .rain-theme #skills-block {
+            border-color: rgba(100, 149, 237, 0.5);
+        }
+
+        .anime-theme #profile-block,
+        .anime-theme #skills-block {
+            border-color: rgba(255, 0, 255, 0.5);
+        }
+
+        .car-theme #profile-block,
+        .car-theme #skills-block {
+            border-color: rgba(255, 165, 0, 0.5);
+        }
+
+        
+        .glitch {
+            animation: glitch 0.2s ease-in-out;
+        }
+
+        @keyframes glitch {
+            0% {
+                transform: translate(0);
+            }
+            20% {
+                transform: translate(-2px, 2px);
+            }
+            40% {
+                transform: translate(-2px, -2px);
+            }
+            60% {
+                transform: translate(2px, 2px);
+            }
+            80% {
+                transform: translate(2px, -2px);
+            }
+            100% {
+                transform: translate(0);
+            }
+        }
+
+        @keyframes orbit {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        
+        #easter-egg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(6px);
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+
+        #easter-egg-overlay.visible {
+            opacity: 1;
+        }
+
+        #easter-egg-mark {
+            font-family: 'Courier New', monospace;
+            font-size: 40vmin;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 40px rgba(255, 255, 255, 0.9), 0 0 80px rgba(255, 255, 255, 0.5);
+            transform: scale(0.6);
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        #easter-egg-overlay.visible #easter-egg-mark {
+            transform: scale(1);
+        }
+
+        @keyframes fast-orbit {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        
+        .cursor-trail {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .cursor-trail-dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s ease;
+        }
+
+        
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            z-index: 30;
+            cursor: pointer;
+        }
+
+        #start-text {
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            color: #fff;
+            text-align: center;
+        }
+
+        
+        #connection-status {
+            position: fixed;
+            top: 12px;
+            left: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.75);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 4px 10px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            z-index: 25;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #connection-status.visible {
+            opacity: 1;
+        }
+
+        #connection-status .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #faa61a;
+            animation: connDotPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes connDotPulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        
+        @media (max-width: 767px) {
+            
+            #profile-block, #skills-block {
+                width: 90vw;
+                max-width: 350px;
+                min-height: 280px;
+                padding: 15px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                max-height: 85vh;
+                max-height: 85dvh;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .profile-header {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .profile-container {
+                width: 120px;
+                height: 120px;
+            }
+
+            .profile-picture {
+                width: 120px;
+                height: 120px;
+            }
+
+            .profile-info {
+                align-items: center;
+                text-align: center;
+            }
+
+            .name-and-badges {
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+
+            #profile-name {
+                font-size: 24px;
+                letter-spacing: 2px;
+            }
+
+            .badge-group {
+                justify-content: center;
+                gap: 6px;
+            }
+
+            .badge {
+                width: 18px;
+                height: 18px;
+            }
+
+            .badge-container .tooltip {
+                width: 100px;
+                font-size: 12px;
+                margin-left: -50px;
+                bottom: 110%;
+            }
+
+            #profile-bio {
+                font-size: 14px;
+                line-height: 1.4;
+            }
+
+            .bio-separator {
+                margin: 15px 0;
+            }
+
+            .social-links {
+                gap: 10px;
+                justify-content: center;
+            }
+
+            .social-icon {
+                width: 32px;
+                height: 32px;
+            }
+
+            .visitor-counter {
+                font-size: 12px;
+                padding: 6px 12px;
+                align-self: center;
+            }
+
+            .visitor-icon {
+                width: 16px;
+                height: 16px;
+            }
+
+            .visitor-counter .tooltip {
+                width: 100px;
+                font-size: 12px;
+                margin-left: -50px;
+                top: -30px;
+            }
+
+            .skills-title {
+                font-size: 18px;
+                margin-bottom: 10px;
+            }
+
+            .skill-icon {
+                width: 18px;
+                height: 18px;
+            }
+
+            .skill-name span {
+                font-size: 14px;
+            }
+
+            
+            .equalizer {
+                bottom: 20px;
+                width: 130px;
+                height: 34px;
+                padding: 5px 10px;
+            }
+
+            .equalizer-hint {
+                bottom: calc(20px + 34px + 6px);
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+
+            
+            #results-button-container {
+                top: 10px;
+            }
+
+            #results-theme {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+            #results-hint {
+                width: 150px;
+                font-size: 10px;
+                padding: 6px 10px;
+            }
+
+            
+            #start-text {
+                font-size: 18px;
+                padding: 0 20px;
+            }
+
+            #connection-status {
+                top: 8px;
+                left: 8px;
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+        }
+        
+        .ig-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ig-modal {
+            width: 300px;
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.25);
+        }
+
+        .ig-modal-title {
+            color: #fff;
+            font-size: 15px;
+            text-align: center;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+
+        .ig-modal-option {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 10px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 10px;
+            color: #fff;
+            text-decoration: none;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .ig-modal-option:hover {
+            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .ig-modal-handle {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        #ig-modal-close {
+            margin-top: 4px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            color: #fff;
+            padding: 8px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        #ig-modal-close:hover {
+            border-color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Retro+Gaming&display=swap" rel="stylesheet">
+</head>
+<body class="home-theme" onload="initMedia()">
+    
+    <div class="custom-cursor"></div>
+
+    
+    
+    <div id="connection-status">
+        <div class="dot"></div>
+        <span id="connection-status-text">reconnecting...</span>
+    </div>
+
+    
+    <div id="start-screen">
+        <div id="start-text"></div>
+    </div>
+
+    <div id="easter-egg-overlay">
+        <div id="easter-egg-mark">?</div>
+    </div>
+
+    <div class="container">
+        
+        <video id="background" autoplay loop muted playsinline webkit-playsinline>
+            <source src="assets/background.mp4" type="video/mp4">
+        </video>
+
+        
+        <div class="glitch-overlay"></div>
+        <div id="overlay" class="hidden">
+            
+        </div>
+        <div id="snow-overlay" class="hidden">
+            
+        </div>
+        <div id="vignette-overlay"></div>
+
+
+        <div id="profile-block">
+            <div class="profile-header">
+                <div class="profile-pic-wrap">
+                    <div class="profile-container">
+                        <img src="assets/profile.gif" alt="Profile" class="profile-picture">
+                        <div class="online-status" title="Online"></div>
+                    </div>
+                    <div class="online-text">Online</div>
+                </div>
+                <div class="profile-info">
+                    <div class="name-and-badges">
+                        <div id="profile-name">myosotis</div>
+                        <div class="badge-box">
+                            <div class="badge-box-inner">
+                                <div class="badge-group">
+                                    <div class="badge-container">
+                                        <svg class="badge" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l-4 3 4 3M16 9l4 3-4 3M13 6l-2 12"/></svg>
+                                        <span class="tooltip">Developer</span>
+                                    </div>
+                                    <div class="badge-container">
+                                        <svg class="badge" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v3M9 4l1.5 3M15 4l-1.5 3M6 12H3M21 12h-3M5 8l2 2M19 8l-2 2M5 17l2-2M19 17l-2-2"/><rect x="8" y="7" width="8" height="12" rx="4"/><path stroke-linecap="round" d="M8 12h8"/></svg>
+                                        <span class="tooltip">Bug Hunter</span>
+                                    </div>
+                                    <div class="badge-container">
+                                        <svg class="badge" viewBox="0 0 24 24" fill="none" stroke="#E5E5E5" stroke-width="2"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4-3.9-3.8 5.4-.8L12 2z"/></svg>
+                                        <span class="tooltip">Early Supporter</span>
+                                    </div>
+                                    <div class="badge-container">
+                                        <svg class="badge" viewBox="0 0 24 24" fill="none" stroke="#D4D4D4" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+                                        <span class="tooltip">Night Owl</span>
+                                    </div>
+                                    <div class="badge-container">
+                                        <svg class="badge" viewBox="0 0 24 24" fill="none" stroke="#C4C4C4" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M12 3l7 3v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/></svg>
+                                        <span class="tooltip">Trusted</span>
+                                    </div>
+                                    <div class="badge-container">
+                                        <svg class="badge" viewBox="0 0 24 24" fill="none" stroke="#B0B0B0" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 17l4-4m0 0l3-7 3 7-7 3zm3-7l6 6"/><path stroke-linecap="round" d="M4 20h5"/></svg>
+                                        <span class="tooltip">Explorer</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="profile-bio"></div>
+                    <div id="visitor-greeting" class="visitor-greeting"></div>
+                    <div id="spotify-widget" class="spotify-widget hidden">
+                        <img id="spotify-album-art" class="spotify-album-art" src="" alt="Album Art">
+                        <div class="spotify-info">
+                            <div class="spotify-header">
+                                <svg class="spotify-icon" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.6 14.4c-.2.3-.6.4-.9.2-2.5-1.5-5.6-1.9-9.3-1a.7.7 0 01-.3-1.3c4-.9 7.5-.5 10.3 1.2.3.2.4.6.2.9zm1.2-2.7c-.2.4-.7.5-1.1.3-2.8-1.7-7.1-2.2-10.4-1.2a.85.85 0 01-.5-1.6c3.8-1.2 8.5-.6 11.7 1.4.4.2.5.7.3 1.1zm.1-2.8C14.5 9 8.7 8.8 5.4 9.8a1 1 0 11-.6-1.9c3.8-1.1 10.2-.9 14.2 1.5a1 1 0 01-1 1.7z"/></svg>
+                                <span>Listening to Spotify</span>
+                            </div>
+                            <div id="spotify-song" class="spotify-song"></div>
+                            <div id="spotify-artist" class="spotify-artist"></div>
+                            <div class="spotify-progress-bar"><div id="spotify-progress" class="spotify-progress"></div></div>
+                        </div>
+                    </div>
+                    <div id="discord-activities-skeleton" class="discord-activities">
+                        <div class="skeleton-card">
+                            <div class="skeleton-art"></div>
+                            <div class="skeleton-lines">
+                                <span class="skeleton-text"></span>
+                                <span class="skeleton-text"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="discord-activities" class="discord-activities"></div>
+                </div>
+            </div>
+
+            <div class="bio-separator"></div>
+
+            <div class="profile-footer">
+
+                <div class="social-links">
+                    <a href="https://discord.com/users/1023541677975150692" target="_blank">
+                        <svg class="social-icon" viewBox="0 0 24 24" fill="#ffffff"><path d="M20.3 5.4A18.5 18.5 0 0015.6 4l-.3.6a13.6 13.6 0 016.1 3.2 17.6 17.6 0 00-15.6-.1A13.5 13.5 0 018 4.6L7.7 4A18.4 18.4 0 003 5.4C.7 9 0 12.5.3 16a18.6 18.6 0 005.6 2.9l.9-1.4a11.9 11.9 0 01-1.9-.9c.2-.1.3-.3.5-.4a13.3 13.3 0 0011.2 0l.5.4c-.6.4-1.3.7-2 .9l1 1.4A18.5 18.5 0 0023.7 16c.4-4-.6-7.5-3.4-10.6zM8.5 13.9c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.7.8 1.6 1.8c0 1-.7 1.8-1.6 1.8zm7 0c-.9 0-1.6-.8-1.6-1.8s.7-1.8 1.6-1.8 1.7.8 1.6 1.8c0 1-.7 1.8-1.6 1.8z"/></svg>
+                    </a>
+                    <a href="https://github.com/ryanfeelnumb" target="_blank">
+                        <svg class="social-icon" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2C6.5 2 2 6.6 2 12.2c0 4.5 2.9 8.3 6.8 9.6.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.4-3.4-1.4-.5-1.1-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.5-1.3.1-2.7 0 0 .8-.3 2.7 1a9.4 9.4 0 015 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .3.3.6.9.6 1.9v2.8c0 .3.2.6.7.5A10.2 10.2 0 0022 12.2C22 6.6 17.5 2 12 2z"/></svg>
+                    </a>
+                    <a href="#" id="instagram-btn">
+                        <svg class="social-icon" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="#ffffff" stroke="none"/></svg>
+                    </a>
+                </div>
+
+
+                <div class="visitor-counter">
+                    <svg class="visitor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    <span id="visitor-count" class="skeleton-text">&nbsp;</span>
+                    <span class="tooltip">Profile Views</span>
+                </div>
+                <div class="last-seen">
+                    <svg class="last-seen-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v5l3 3"></path>
+                    </svg>
+                    <span id="last-seen-text" class="skeleton-text">&nbsp;</span>
+                </div>
+                <div class="live-clock">
+                    <svg class="live-clock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="4" width="18" height="17" rx="2" stroke-width="2"></rect>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 2v4M16 2v4M3 10h18"></path>
+                    </svg>
+                    <span id="live-clock-text">&nbsp;</span>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="skills-block" class="hidden">
+            <h2 class="skills-title">a bit programming</h2>
+            <div class="skill">
+                <div class="skill-name">
+                    <svg class="skill-icon" viewBox="0 0 24 24"><path fill="#3776AB" d="M12 2c-3.9 0-3.7 1.7-3.7 1.7v1.8h3.8v.6H6.9S4 5.8 4 9.8s2.6 3.9 2.6 3.9h1.6v-2.1s-.1-2.6 2.6-2.6h3.6s2.5.1 2.5-2.4V4.4S17.2 2 12 2zM9.8 3.5c.5 0 .9.4.9.9s-.4.9-.9.9-.9-.4-.9-.9.4-.9.9-.9z"/><path fill="#FFD43B" d="M12 22c3.9 0 3.7-1.7 3.7-1.7v-1.8h-3.8v-.6h5.2s2.9.3 2.9-3.7-2.6-3.9-2.6-3.9h-1.6v2.1s.1 2.6-2.6 2.6H9.6s-2.5-.1-2.5 2.4v4s-.4 2.6 4.9 2.6zm2.2-1.5c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9z"/></svg>
+                    <span>Python</span>
+                    <span id="python-percent">87%</span>
+                </div>
+                <div class="skill-bar-container">
+                    <div id="python-bar" class="skill-bar"></div>
+                </div>
+            </div>
+            <div class="skill">
+                <div class="skill-name">
+                    <svg class="skill-icon" viewBox="0 0 24 24"><path fill="#00599C" d="M12 2l8.7 5v10L12 22l-8.7-5V7L12 2z"/><text x="12" y="16" font-size="8" fill="#fff" text-anchor="middle" font-family="Arial, sans-serif">C++</text></svg>
+                    <span>C++</span>
+                    <span id="cpp-percent">75%</span>
+                </div>
+                <div class="skill-bar-container">
+                    <div id="cpp-bar" class="skill-bar"></div>
+                </div>
+            </div>
+            <div class="skill">
+                <div class="skill-name">
+                    <svg class="skill-icon" viewBox="0 0 24 24"><path fill="#68217A" d="M12 2l8.7 5v10L12 22l-8.7-5V7L12 2z"/><text x="12" y="16" font-size="7.5" fill="#fff" text-anchor="middle" font-family="Arial, sans-serif">C#</text></svg>
+                    <span>C#</span>
+                    <span id="csharp-percent">80%</span>
+                </div>
+                <div class="skill-bar-container">
+                    <div id="csharp-bar" class="skill-bar"></div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="results-button-container" class="hidden">
+            <button id="results-theme">View Results</button>
+            <div id="results-hint" class="hidden">click again to return to profile</div>
+        </div>
+
+
+        <div class="equalizer-hint" id="equalizer-hint">tap to play/pause</div>
+        <div id="equalizer" class="equalizer" title="Play / Pause"></div>
+
+        
+        <div id="ig-modal-overlay" class="ig-modal-overlay hidden">
+            <div class="ig-modal">
+                <div class="ig-modal-title">Instagram</div>
+                <a href="https://www.instagram.com/ryannumb_/" target="_blank" class="ig-modal-option">
+                    <span>FIRST</span>
+                    <span class="ig-modal-handle"></span>
+                </a>
+                <a href="https://www.instagram.com/myosotis11_/" target="_blank" class="ig-modal-option">
+                    <span>GAME</span>
+                    <span class="ig-modal-handle"></span>
+                </a>
+                <button id="ig-modal-close">BACK</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <audio id="background-music" loop>
+        <source src="assets/background_music.mp3" type="audio/mp3">
+    </audio>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+
+    <script src="script.js"></script>
+</body>
+</html>
